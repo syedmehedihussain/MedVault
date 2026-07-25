@@ -2,37 +2,37 @@
 
 Work top to bottom. Finish all **P0** before starting **P1**. Check items off as you go.
 
-## Milestone 0 — Project setup (P0)
-- [ ] Create a Next.js + TypeScript app with Tailwind CSS.
-- [ ] Add `.env.example` with all keys from `AGENTS.md`; add `.env` to `.gitignore`.
-- [ ] Create `src/lib/types.ts` with the types from `DATA_MODEL.md`.
+## Milestone 0 — Project setup (P0) 
+- [x] Create a Next.js + TypeScript app with Tailwind CSS.
+- [x] Add `.env.example` with all keys from `AGENTS.md`; add `.env` to `.gitignore`.
+- [x] Create `src/lib/types.ts` with the types from `DATA_MODEL.md`.
 - [ ] Create `public/samples/` and add 1–2 sample medical report images for demos.
 
-## Milestone 1 — Supabase (auth + DB + storage) (P0)
-- [ ] Create a free Supabase project; copy URL + anon key + service role key into `.env`.
-- [ ] Run the `reports` table SQL and the RLS policy from `DATA_MODEL.md`.
-- [ ] Create a private Storage bucket named `reports`.
-- [ ] Add `src/lib/supabaseClient.ts` (browser) and `src/lib/supabaseServer.ts` (server, service role).
+## Milestone 1 — Supabase (auth + DB + storage) (P0) 
+- [x] Create a free Supabase project; copy URL + anon key + service role key into `.env`.
+- [x] Run the `reports` table SQL and the RLS policy from `DATA_MODEL.md`.
+- [x] Create a private Storage bucket named `reports`.
+- [x] Add `src/lib/supabaseClient.ts` (browser) and `src/lib/supabaseServer.ts` (server, service role).
 
 ## Milestone 2 — Auth (F1, P0)
-- [ ] Build a `login` page: email/password sign-up and sign-in via Supabase Auth.
-- [ ] Redirect logged-out users away from `dashboard` and report pages.
-- [ ] Confirm each user only ever sees their own data (RLS enforces this).
+- [x] Build a `login` page: email/password sign-up and sign-in via Supabase Auth.
+- [x] Redirect logged-out users away from `dashboard` and report pages.
+- [x] Confirm each user only ever sees their own data (RLS enforces this).
 
 ## Milestone 3 — Upload + AI extraction (F2, F3, F4, P0)
-- [ ] Add `src/lib/gemini.ts` with `extractReport()` from `AI_INTEGRATION.md`.
-- [ ] Build `UploadButton` component (accept JPG/PNG).
-- [ ] Build `POST /api/reports/upload`:
-  - [ ] save original file to Supabase Storage (`{user_id}/{report_id}/{filename}`),
-  - [ ] call `extractReport()`,
-  - [ ] insert a `reports` row mapping the JSON onto columns,
-  - [ ] on extraction failure, still save the row with `extraction_status="failed"`.
-- [ ] Show a loading state while extraction runs.
+- [x] Add `src/lib/gemini.ts` with `extractReport()` from `AI_INTEGRATION.md`.
+- [x] Build `UploadButton` component (accept JPG/PNG).
+- [x] Build `POST /api/reports/upload`:
+  - [x] save original file to Supabase Storage (`{user_id}/{report_id}/{filename}`),
+  - [x] call `extractReport()`,
+  - [x] insert a `reports` row mapping the JSON onto columns,
+  - [x] on extraction failure, still save the row with `extraction_status="failed"`.
+- [x] Show a loading state while extraction runs.
 
 ## Milestone 4 — View records (F5, F6, P0)
-- [ ] Build `dashboard` page: list the user's reports newest-first (type, date, summary) using `ReportCard`.
-- [ ] Build `reports/[id]` detail page: show the original image (signed URL) beside the extracted data table (`ReportDetail`).
-- [ ] Handle the empty state ("No reports yet — upload your first one").
+- [x] Build `dashboard` page: list the user's reports newest-first (type, date, summary) using `ReportCard`.
+- [x] Build `reports/[id]` detail page: show the original image (signed URL) beside the extracted data table (`ReportDetail`).
+- [x] Handle the empty state ("No reports yet — upload your first one").
 
 ## Milestone 5 — Search (F7, P0)
 - [ ] Build `SearchBar` on the dashboard.
