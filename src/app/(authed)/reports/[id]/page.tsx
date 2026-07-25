@@ -1,17 +1,13 @@
-// Milestone 4: report detail view.
-//
-// Loads a single report by id. RLS guarantees the row only returns when
-// user_id matches the session — if someone hits another user's id, they
-// see the same notFound() response (no signal that the row exists).
-//
-// The original image is served via a short-lived signed URL minted on the
-// server. The browser never receives a public URL.
+// Report detail page — loads a single report by id (RLS-scoped) and
+// hands it to <ReportDetail>. The original scan is served via a
+// short-lived signed URL minted on the server.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { createSignedUrl } from "@/lib/storage";
 import ReportDetail from "@/components/ReportDetail";
+import { ChevronLeft } from "@/components/icons";
 import type { ReportRow } from "@/lib/types";
 
 export default async function ReportDetailPage({
@@ -33,7 +29,7 @@ export default async function ReportDetailPage({
       "id, user_id, created_at, report_type, report_date, doctor_or_hospital, summary, results, file_path, source, extraction_status",
     )
     .eq("id", id)
-    .maybeSingle<ReportRow>();
+    .maybeSingle();
 
   if (error || !report) notFound();
 
@@ -42,17 +38,16 @@ export default async function ReportDetailPage({
     : null;
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10">
-      <div className="mb-6">
-        <Link
-          href="/dashboard"
-          className="text-sm text-zinc-500 hover:text-zinc-900"
-        >
-          ← Back to your reports
-        </Link>
-      </div>
+    <div className="flex flex-col gap-6">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-2 self-start rounded-full bg-white px-3 py-2 text-sm font-semibold text-ink-500 shadow-[var(--shadow-soft)] transition-colors hover:text-brand-600"
+      >
+        <ChevronLeft size={16} />
+        All reports
+      </Link>
 
-      <ReportDetail report={report} signedUrl={signedUrl} />
-    </main>
+      <ReportDetail report={report as unknown as ReportRow} signedUrl={signedUrl} />
+    </div>
   );
 }

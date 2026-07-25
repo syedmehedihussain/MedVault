@@ -1,81 +1,91 @@
-// Milestone 4: list the user's reports newest-first. RLS guarantees we
-// only ever see rows where user_id matches the session — see
-// docs/DATA_MODEL.md. Milestone 5 layered a <SearchBar> on top of this
-// page that filters live via /api/reports/list.
+// Dashboard — mockup mobile 03 / desktop D2.
+// Server-renders the report list and hands it to a client component for
+// instant client-side filtering. The sidebar lives in (authed)/layout.tsx.
 
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { getDashboardReports } from "@/lib/reports";
 import UploadButton from "@/components/UploadButton";
-import ReportCard from "@/components/ReportCard";
 import SearchBar from "@/components/SearchBar";
+import RecordsList from "@/components/RecordsList";
+import PartnerHospitalButton from "@/components/PartnerHospitalButton";
+import Disclaimer from "@/components/Disclaimer";
 import type { ReportRow } from "@/lib/types";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: rows, error } = await supabase
-    .from("reports")
-    .select(
-      "id, user_id, created_at, report_type, report_date, doctor_or_hospital, summary, results, file_path, source, extraction_status",
-    )
-    .order("created_at", { ascending: false })
-    .returns<ReportRow[]>();
+  if (!user) {
+    redirect("/login");
+  }
 
-  const reports = rows ?? [];
+  const { reports, error } = await getDashboardReports(user.id, q);
+  const initialReports = reports as unknown as ReportRow[];
+
+  const displayName = (user?.user_metadata?.full_name as string | undefined) ??
+    user?.email?.split("@")[0] ??
+    "there";
+  const firstName = displayName.split(/\s+/)[0];
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10">
-      <div className="mb-8 flex items-end justify-between gap-4">
+    <div className="flex flex-col gap-8">
+      {/* Greeting + primary CTA */}
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Your reports</h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Signed in as {user?.email}
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
+            Good day
+          </p>
+          <h1 className="mt-2 text-2xl font-extrabold text-ink-900 sm:text-3xl">
+            Hi, {firstName}.
+          </h1>
+          <p className="mt-1 text-sm text-ink-500">
+            {reports.length === 0
+              ? "Let's add your first report."
+              : `You have ${reports.length} report${reports.length === 1 ? "" : "s"} in your vault.`}
           </p>
         </div>
-      </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <PartnerHospitalButton />
+          <UploadButton />
+        </div>
+      </header>
 
-      <div className="mb-8">
-        <UploadButton />
-      </div>
+      {/* Search */}
+      <Suspense
+        fallback={
+          <div className="h-14 w-full animate-pulse rounded-2xl bg-mint" />
+        }
+      >
+        <SearchBar initialQuery={q} />
+      </Suspense>
 
       {error && (
-        <p className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          Could not load your reports: {error.message}
+        <p className="rounded-2xl border border-blood-200 bg-blood-50 px-4 py-3 text-sm text-blood-700">
+          Could not load your reports: {error}
         </p>
       )}
 
-      <Suspense
-        fallback={
-          <div className="h-12 w-full animate-pulse rounded-xl bg-zinc-100" />
-        }
-      >
-        <SearchBar initialReports={reports} />
-      </Suspense>
+      {/* Records */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-bold text-ink-900">Recent records</h2>
+          <span className="text-xs text-ink-400">
+            {reports.length} total
+          </span>
+        </div>
+        <RecordsList initialReports={initialReports} query={q} />
+      </section>
 
-      {/* When the user has zero reports at all, show the friendly empty
-          state from Milestone 4 — otherwise the SearchBar's own empty
-          state ("No reports match …") takes over. */}
-      {reports.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-dashed border-zinc-300 bg-white p-10 text-center">
-          <h2 className="text-base font-medium text-zinc-900">
-            No reports yet
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Upload your first report above. We will read it and keep it here
-            forever.
-          </p>
-        </div>
-      )}
-      {reports.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {reports.map((r) => (
-            <ReportCard key={r.id} report={r} />
-          ))}
-        </div>
-      )}
-    </main>
+      <Disclaimer className="mt-4" />
+    </div>
   );
 }

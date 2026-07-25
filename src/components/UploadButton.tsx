@@ -1,13 +1,14 @@
 "use client";
 
+// "+ Add new report" pill from mockup 03. Click → file picker → upload
+// to /api/reports/upload → on success, redirect to /reports/<id>/processing
+// where the user watches the AI extract fields. Background refreshes the
+// dashboard so the new card appears next visit.
+
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
-// Drag-and-drop + click-to-pick upload button.
-//
-// Shows a clear loading state while Gemini reads the image, then refreshes
-// the dashboard so the new card appears. Surfaces server errors inline so a
-// failed AI call doesn't look like a lost upload.
+import Button from "./Button";
+import { Camera, Spinner } from "./icons";
 
 const ACCEPT = "image/jpeg,image/png";
 
@@ -16,7 +17,6 @@ export default function UploadButton() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [dragOver, setDragOver] = useState(false);
 
   const upload = (file: File) => {
     setError(null);
@@ -47,60 +47,50 @@ export default function UploadButton() {
         return;
       }
 
-      router.refresh();
+      const body = (await res.json().catch(() => null)) as {
+        reportId?: string;
+      } | null;
+      if (body?.reportId) {
+        router.push(`/reports/${body.reportId}/processing`);
+      } else {
+        router.refresh();
+      }
     });
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          const f = e.dataTransfer.files?.[0];
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
           if (f) upload(f);
+          e.target.value = "";
         }}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
-          dragOver
-            ? "border-zinc-900 bg-zinc-100"
-            : "border-zinc-300 bg-white hover:border-zinc-500"
-        }`}
+      />
+      <Button
+        size="lg"
+        onClick={() => inputRef.current?.click()}
+        disabled={isPending}
+        className="w-full sm:w-auto"
       >
-        <p className="text-sm font-medium text-zinc-900">
-          {isPending ? "Reading the report…" : "Upload a report"}
-        </p>
-        <p className="mt-1 text-xs text-zinc-500">
-          Drop a JPG or PNG here, or click to pick a file.
-        </p>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPT}
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) upload(f);
-            // Reset so picking the same file again still fires onChange.
-            e.target.value = "";
-          }}
-        />
-      </div>
+        {isPending ? (
+          <>
+            <Spinner size={18} className="mr-2 animate-spin" />
+            Uploading…
+          </>
+        ) : (
+          <>
+            <Camera size={18} className="mr-2" />
+            Add new report
+          </>
+        )}
+      </Button>
       {error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-2xl border border-blood-200 bg-blood-50 px-4 py-2 text-sm text-blood-700">
           {error}
         </p>
       )}

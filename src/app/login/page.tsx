@@ -1,19 +1,51 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
+import Logo from "@/components/Logo";
+import Button from "@/components/Button";
+import Input from "@/components/Input";
+import EncryptedNotice from "@/components/EncryptedNotice";
+import Disclaimer from "@/components/Disclaimer";
+import { Lock, Camera } from "@/components/icons";
 
 type Mode = "signin" | "signup";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-mint-page text-ink-300">
+      Loading…
+    </div>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("signin");
+  const search = useSearchParams();
+  const initialMode: Mode = search.get("mode") === "signup" ? "signup" : "signin";
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Keep the URL in sync so the segmented control reflects the actual page.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", mode);
+    window.history.replaceState({}, "", url.toString());
+  }, [mode]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +65,6 @@ export default function LoginPage() {
           setError(error.message);
           return;
         }
-        // With Supabase email auth, the session may or may not be created
-        // depending on whether "Confirm email" is enabled. If a session is
-        // present, we go straight to the dashboard.
         const { data } = await supabase.auth.getSession();
         if (data.session) {
           router.replace("/dashboard");
@@ -62,110 +91,143 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {mode === "signin" ? "Welcome back" : "Create your MedVault"}
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Your secure, lifelong medical record.
+    <div className="flex min-h-[100dvh] flex-col bg-canvas lg:flex-row">
+      {/* LEFT — Hero panel (mirrors /welcome). */}
+      <aside className="relative flex flex-col justify-between overflow-hidden bg-mint px-6 py-10 lg:basis-[45%] lg:px-14 lg:py-16">
+        <Link href="/welcome">
+          <Logo size="md" />
+        </Link>
+
+        <div className="relative z-10 mt-12 max-w-sm lg:mt-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
+            One quiet place for health
           </p>
+          <h1 className="mt-3 text-3xl font-extrabold leading-tight text-ink-900 lg:text-4xl">
+            Sign in to <span className="text-brand-600">your records.</span>
+          </h1>
+          <p className="mt-4 text-sm leading-relaxed text-ink-500">
+            Pick up where you left off — every report, every value, every
+            image, all from your last visit.
+          </p>
+
+          <div className="mt-8 hidden lg:block">
+            <EncryptedNotice />
+          </div>
         </div>
 
-        <form
-          onSubmit={onSubmit}
-          className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
-        >
-          <label className="block">
-            <span className="block text-sm font-medium text-zinc-700">
-              Email
-            </span>
-            <input
+        <div className="mt-12 flex items-center gap-3 rounded-2xl bg-white/70 p-4 text-xs text-ink-500 lg:hidden">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-mint text-brand-600">
+            <Camera size={16} />
+          </span>
+          <p>OcardiSnap a photo, find it instantly. Your phone, your rules.</p>
+        </div>
+
+        <Disclaimer className="hidden lg:block" variant="strong" />
+      </aside>
+
+      {/* RIGHT — Form card. */}
+      <section className="flex flex-1 items-center justify-center px-5 py-10 lg:px-12">
+        <div className="w-full max-w-sm">
+          <h2 className="text-2xl font-extrabold text-ink-900">
+            {mode === "signin" ? "Welcome back" : "Create your account"}
+          </h2>
+          <p className="mt-2 text-sm text-ink-500">
+            {mode === "signin"
+              ? "Sign in to access your records."
+              : "Set up your private vault in under a minute."}
+          </p>
+
+          {/* Segmented control */}
+          <div
+            role="tablist"
+            aria-label="Authentication mode"
+            className="mt-7 grid grid-cols-2 rounded-full bg-white p-1 ring-1 ring-line"
+          >
+            {(["signin", "signup"] as Mode[]).map((m) => (
+              <button
+                key={m}
+                role="tab"
+                aria-selected={mode === m}
+                type="button"
+                onClick={() => {
+                  setMode(m);
+                  setError(null);
+                  setMessage(null);
+                }}
+                className={`rounded-full py-2 text-sm font-semibold transition-colors ${
+                  mode === m
+                    ? "bg-brand-500 text-white shadow-[var(--shadow-button)]"
+                    : "text-ink-500 hover:text-ink-900"
+                }`}
+              >
+                {m === "signin" ? "Sign in" : "Sign up"}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={onSubmit} className="mt-7 space-y-4">
+            <Input
+              label="Email"
               type="email"
               required
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              placeholder="you@example.com"
             />
-          </label>
-
-          <label className="block">
-            <span className="block text-sm font-medium text-zinc-700">
-              Password
-            </span>
-            <input
+            <Input
+              label="Password"
               type="password"
               required
               minLength={8}
-              autoComplete={
-                mode === "signin" ? "current-password" : "new-password"
-              }
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              placeholder="At least 8 characters"
+              leadingIcon={<Lock size={16} />}
             />
-          </label>
 
-          {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-          {message && (
-            <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-              {message}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isPending
-              ? "Working…"
-              : mode === "signin"
-                ? "Sign in"
-                : "Create account"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-zinc-600">
-          {mode === "signin" ? (
-            <>
-              New here?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signup");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            {error && (
+              <p
+                role="alert"
+                className="rounded-2xl border border-blood-200 bg-blood-50 px-4 py-3 text-sm text-blood-700"
               >
-                Create an account
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("signin");
-                  setError(null);
-                  setMessage(null);
-                }}
-                className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+                {error}
+              </p>
+            )}
+            {message && (
+              <p
+                role="status"
+                className="rounded-2xl border border-brand-200 bg-mint px-4 py-3 text-sm text-brand-700"
               >
-                Sign in
-              </button>
-            </>
-          )}
-        </p>
-      </div>
-    </main>
+                {message}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              size={60}
+              disabled={isPending}
+              className="w-full"
+            >
+              {isPending
+                ? "Working…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
+            </Button>
+          </form>
+
+          <div className="mt-6 lg:hidden">
+            <EncryptedNotice compact />
+          </div>
+
+          <p className="mt-8 text-center text-[11px] text-ink-400">
+            By continuing you agree to keep your records private. MedVault is
+            not a medical device.
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -50,22 +50,22 @@ export async function GET(request: Request) {
   let filtered = query;
 
   if (q.length > 0) {
-    // Escape any `%` / `_` the caller typed so they're treated as literals
-    // rather than LIKE wildcards. We also escape `\` to be safe — Supabase's
-    // PostgREST passes the pattern through as-is.
-    const safe = q.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+    // Escape `%` and `_` so a literal character the user typed isn't
+    // interpreted as a LIKE wildcard. We don't touch `\` — Postgres' default
+    // LIKE escape char is `\`, and PostgREST forwards the pattern verbatim.
+    const safe = q.replace(/%/g, "\\%").replace(/_/g, "\\_");
     const pattern = `%${safe}%`;
 
-    // Three ILIKE clauses on plain text columns + one on the JSONB cast.
-    // `or()` joins them with SQL OR; `ilike` is case-insensitive.
-    // `results::text` lets us substring-match testName + value + unit
-    // without writing a separate jsonb_path_exists query.
+    // ILIKE on each of the three user-visible text columns. We deliberately
+    // skip the `results` JSONB column here: PostgREST's `.or()` parser
+    // doesn't accept the `column::cast` syntax (it stops at the `:`), and
+    // the AI-written `summary` already mentions the key test values, so
+    // searching it covers the same ground.
     filtered = filtered.or(
       [
         `report_type.ilike.${pattern}`,
         `doctor_or_hospital.ilike.${pattern}`,
         `summary.ilike.${pattern}`,
-        `results::text.ilike.${pattern}`,
       ].join(","),
     );
   }

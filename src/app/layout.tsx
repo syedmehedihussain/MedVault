@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -24,20 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col bg-zinc-50 text-zinc-900">
-        <div className="flex flex-1 flex-col">{children}</div>
-        <footer className="border-t border-zinc-200 bg-white">
-          <div className="mx-auto max-w-5xl px-4 py-4 text-xs text-zinc-500">
-            MedVault is not a medical device and does not provide medical
-            advice. It helps you store and organise your records — always
-            consult a qualified clinician for medical decisions.
-          </div>
-        </footer>
-      </body>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-full bg-canvas text-ink-900">{children}</body>
     </html>
   );
 }

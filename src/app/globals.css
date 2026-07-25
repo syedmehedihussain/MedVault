@@ -1,26 +1,170 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* MedVault design tokens — every screen renders off these. The palette,
+   radii, and shadows are extracted from the bundled mockup (see
+   docs/design/MedVault UI.html). Adding a new colour / radius here
+   propagates to every Tailwind utility that uses it. */
+@theme {
+  /* Brand teals */
+  --color-brand-50: #e3f3f0;
+  --color-brand-100: #dff0ec;
+  --color-brand-200: #c6e3dd;
+  --color-brand-300: #9ed1c8;
+  --color-brand-400: #6db8ac;
+  --color-brand-500: #0e9c90;
+  --color-brand-600: #0b7a70;
+  --color-brand-700: #0a6a61;
+  --color-brand-800: #08544d;
+  --color-brand-900: #06423d;
+
+  /* Type scale colours */
+  --color-ink-900: #10201e; /* near-black, headlines */
+  --color-ink-800: #183b37; /* plain-language callout text */
+  --color-ink-700: #2a3a38;
+  --color-ink-600: #3a4645; /* form labels */
+  --color-ink-500: #52605e; /* body text */
+  --color-ink-400: #8b9997; /* captions, placeholders */
+  --color-ink-300: #a4b0ae; /* disclaimers */
+
+  /* Surfaces */
+  --color-canvas: #f4f8f7; /* page background */
+  --color-canvas-deep: #e7efee;
+  --color-surface: #ffffff;
+  --color-track: #eaf1f0; /* segmented control track */
+  --color-mint: #e3f3f0;
+  --color-mint-soft: #e1f3f0;
+  --color-mint-page: #eef4f3;
+  --color-mint-grid: #eef3f2;
+  --color-table-header: #f7faf9;
+
+  /* Borders */
+  --color-line-soft: #edf2f1;
+  --color-line: #e6eeec;
+  --color-line-input: #dce7e5;
+  --color-line-button: #d5e2e0;
+  --color-line-dashed: #c9d6d4;
+
+  /* Accent tints (per report category) */
+  --color-blood-fg: #0e9c90;
+  --color-blood-bg: #e1f3f0;
+  --color-rx-fg: #c97a2b;
+  --color-rx-bg: #fbecdd;
+  --color-scan-fg: #3e7fb8;
+  --color-scan-bg: #e7f0f8;
+  --color-other-fg: #6b7a78;
+  --color-other-bg: #eef2f1;
+
+  /* Accent flourish */
+  --color-flourish: #f0954a;
+
+  /* Status */
+  --color-warn-fg: #b87a17;
+  --color-warn-bg: #fbf2dd;
+  --color-watch-fg: #b87a17;
+  --color-watch-bg: #fbf2dd;
+  --color-high-fg: #b8412c;
+  --color-high-bg: #fbe1da;
+  --color-normal-fg: #0b7a70;
+  --color-normal-bg: #e1f3f0;
+  --color-low-fg: #2563eb;
+  --color-low-bg: #e0ecff;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-2xl: 18px;
+  --radius-3xl: 20px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 4px 14px rgba(16, 32, 30, 0.05);
+  --shadow-card-hover: 0 8px 22px rgba(16, 32, 30, 0.08);
+  --shadow-frame: 0 28px 64px rgba(16, 32, 30, 0.12);
+  --shadow-button: 0 10px 22px rgba(14, 156, 144, 0.32);
+  --shadow-button-lg: 0 12px 24px rgba(14, 156, 144, 0.28);
+  --shadow-logo: 0 6px 16px rgba(14, 156, 144, 0.35);
+  --shadow-shield: 0 12px 24px rgba(14, 156, 144, 0.4);
+  --shadow-page: 0 8px 20px rgba(16, 32, 30, 0.1);
+  --shadow-pill-active: 0 2px 6px rgba(16, 32, 30, 0.08);
+
+  /* Font family — Inter is the only family used in the mockup. */
+  --font-sans: var(--font-inter), Inter, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+
+  /* Spacing tokens (rare; most layout uses Tailwind defaults). */
+  --spacing-page: 22px;
+  --spacing-page-lg: 40px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Reset / base */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Focus ring — consistent across every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Processing screen pulse — used by the full-bleed extraction tracker. */
+@keyframes mv-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes mv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mv-pulse-ring {
+  animation: mv-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.mv-spin {
+  animation: mv-spin 0.9s linear infinite;
+}
+
+/* Original-scan placeholder: diagonal stripe pattern. */
+.mv-scan-pattern {
+  background-image: repeating-linear-gradient(
+    135deg,
+    #f4f8f7,
+    #f4f8f7 8px,
+    #e6eeec 8px,
+    #e6eeec 16px
+  );
+}
+
+/* Hero illustration gradient (mint → cream). */
+.mv-hero-gradient {
+  background: linear-gradient(155deg, #e3f3f0 0%, #f4efe7 100%);
+}
+
+/* Subtle card surface inside dark frames. */
+.mv-divider-soft {
+  background: var(--color-line-soft);
 }

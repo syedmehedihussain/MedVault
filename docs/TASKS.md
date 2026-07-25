@@ -35,9 +35,9 @@ Work top to bottom. Finish all **P0** before starting **P1**. Check items off as
 - [x] Handle the empty state ("No reports yet — upload your first one").
 
 ## Milestone 5 — Search (F7, P0)
-- [ ] Build `SearchBar` on the dashboard.
-- [ ] Build `GET /api/reports/list?q=` that filters the user's reports by query across type, doctor, summary, and results (case-insensitive).
-- [ ] Show filtered results live.
+- [x] Build `SearchBar` on the dashboard.
+- [x] Build `GET /api/reports/list?q=` that filters the user's reports by query across type, doctor, summary, and results (case-insensitive).
+- [x] Show filtered results live.
 
 ## Milestone 6 — Deploy (P0)
 - [ ] Write root `README.md`: setup, env vars, run locally, deploy steps.
