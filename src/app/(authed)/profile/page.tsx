@@ -10,6 +10,7 @@ import Card from "@/components/Card";
 import Disclaimer from "@/components/Disclaimer";
 import EncryptedNotice from "@/components/EncryptedNotice";
 import DeleteAccountDialog from "@/components/DeleteAccountDialog";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
 
@@ -69,11 +70,13 @@ export default async function ProfilePage() {
             Account
           </h2>
           <p className="mt-3 text-sm text-ink-900">
-            Sign out of this device, or permanently delete your account and
-            every report stored under it.
+            Change your password, sign out of this device, or permanently delete
+            your account and every report stored under it.
           </p>
 
           <div className="mt-5 flex flex-col gap-4">
+            <ChangePasswordForm />
+
             <form action="/api/auth/signout" method="post">
               <button
                 type="submit"

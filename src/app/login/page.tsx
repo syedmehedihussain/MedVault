@@ -11,7 +11,7 @@ import EncryptedNotice from "@/components/EncryptedNotice";
 import Disclaimer from "@/components/Disclaimer";
 import { Lock, Camera } from "@/components/icons";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "reset";
 
 export default function LoginPage() {
   return (
@@ -36,12 +36,18 @@ function LoginForm() {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // Seeded from ?error=, which is how /auth/confirm reports an expired or
+  // already-used recovery link. Derived once at mount rather than in an
+  // effect, so submitting the form clears it for good.
+  const [error, setError] = useState<string | null>(search.get("error"));
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Keep the URL in sync so the segmented control reflects the actual page.
+  // "reset" is a transient sub-state of sign-in, not a third tab, so it
+  // doesn't get its own URL mode.
   useEffect(() => {
+    if (mode === "reset") return;
     const url = new URL(window.location.href);
     url.searchParams.set("mode", mode);
     window.history.replaceState({}, "", url.toString());
@@ -51,6 +57,32 @@ function LoginForm() {
     e.preventDefault();
     setError(null);
     setMessage(null);
+
+    if (mode === "reset") {
+      if (!email.trim()) {
+        setError("Enter the email address on your account.");
+        return;
+      }
+      startTransition(async () => {
+        const supabase = createSupabaseBrowserClient();
+        // `next` is where /auth/confirm sends the user once the recovery
+        // token has been turned into a session.
+        const redirectTo = `${window.location.origin}/auth/confirm?next=/reset-password`;
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          email.trim(),
+          { redirectTo },
+        );
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        // Deliberately not revealing whether the address has an account.
+        setMessage(
+          "If that email has an account, a reset link is on its way. It expires in one hour.",
+        );
+      });
+      return;
+    }
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
@@ -129,12 +161,18 @@ function LoginForm() {
       <section className="flex flex-1 items-center justify-center px-5 py-10 lg:px-12">
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-extrabold text-ink-900">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {mode === "signin"
+              ? "Welcome back"
+              : mode === "signup"
+                ? "Create your account"
+                : "Reset your password"}
           </h2>
           <p className="mt-2 text-sm text-ink-500">
             {mode === "signin"
               ? "Sign in to access your records."
-              : "Set up your private vault in under a minute."}
+              : mode === "signup"
+                ? "Set up your private vault in under a minute."
+                : "We'll email you a link to choose a new password."}
           </p>
 
           {/* Segmented control */}
@@ -147,7 +185,9 @@ function LoginForm() {
               <button
                 key={m}
                 role="tab"
-                aria-selected={mode === m}
+                // Reset is a detour off sign-in, so sign-in stays the
+                // highlighted tab while the user is in it.
+                aria-selected={mode === m || (mode === "reset" && m === "signin")}
                 type="button"
                 onClick={() => {
                   setMode(m);
@@ -155,7 +195,7 @@ function LoginForm() {
                   setMessage(null);
                 }}
                 className={`rounded-full py-2 text-sm font-semibold transition-colors ${
-                  mode === m
+                  mode === m || (mode === "reset" && m === "signin")
                     ? "bg-brand-500 text-white shadow-[var(--shadow-button)]"
                     : "text-ink-500 hover:text-ink-900"
                 }`}
@@ -175,17 +215,37 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
             />
-            <Input
-              label="Password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 8 characters"
-              leadingIcon={<Lock size={16} />}
-            />
+            {mode !== "reset" && (
+              <div>
+                <Input
+                  label="Password"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete={
+                    mode === "signin" ? "current-password" : "new-password"
+                  }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  leadingIcon={<Lock size={16} />}
+                />
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("reset");
+                      setPassword("");
+                      setError(null);
+                      setMessage(null);
+                    }}
+                    className="mt-2 text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+            )}
 
             {error && (
               <p
@@ -214,8 +274,24 @@ function LoginForm() {
                 ? "Working…"
                 : mode === "signin"
                   ? "Sign in"
-                  : "Create account"}
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Email me a reset link"}
             </Button>
+
+            {mode === "reset" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setError(null);
+                  setMessage(null);
+                }}
+                className="w-full text-center text-sm font-semibold text-ink-500 transition-colors hover:text-ink-900"
+              >
+                Back to sign in
+              </button>
+            )}
           </form>
 
           <div className="mt-6 lg:hidden">

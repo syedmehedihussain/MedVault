@@ -83,7 +83,7 @@ export default function DeleteReportButton({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink-500 transition-colors hover:border-blood-200 hover:bg-blood-50 hover:text-blood-700"
+        className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-line bg-white px-4 py-2.5 text-sm font-bold text-blood-600 transition-colors hover:border-blood-200 hover:bg-blood-50 hover:text-blood-700"
       >
         <Trash size={16} />
         Delete

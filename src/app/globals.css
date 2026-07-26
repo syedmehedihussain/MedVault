@@ -44,6 +44,19 @@
   --color-line-button: #d5e2e0;
   --color-line-dashed: #c9d6d4;
 
+  /* Danger / destructive. Used by delete flows, error banners and the
+     profile danger zone. These were referenced throughout the app before
+     they existed, which rendered `bg-blood-600 text-white` as white-on-white.
+     600 matches the blood-category tile text in lib/reportType.ts. */
+  --color-blood-50: #fdf1ee;
+  --color-blood-100: #fbe1da;
+  --color-blood-200: #f0c7bd;
+  --color-blood-300: #e0a294;
+  --color-blood-400: #c9705d;
+  --color-blood-500: #bd5342;
+  --color-blood-600: #b0473b;
+  --color-blood-700: #8e372d;
+
   /* Accent tints (per report category) */
   --color-blood-fg: #0e9c90;
   --color-blood-bg: #e1f3f0;
