@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Lock } from "@/components/icons";
-import Input from "@/components/Input";
+import PasswordInput from "@/components/PasswordInput";
 import Button from "@/components/Button";
 
 export default function DeleteAccountDialog() {
@@ -165,9 +165,8 @@ export default function DeleteAccountDialog() {
                 </p>
               </div>
 
-              <Input
+              <PasswordInput
                 label="Your password"
-                type="password"
                 autoComplete="current-password"
                 placeholder="Enter your password"
                 leadingIcon={<Lock size={18} />}

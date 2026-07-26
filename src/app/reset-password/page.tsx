@@ -14,7 +14,7 @@ import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Logo from "@/components/Logo";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import PasswordInput from "@/components/PasswordInput";
 import Disclaimer from "@/components/Disclaimer";
 import { Lock } from "@/components/icons";
 
@@ -102,9 +102,8 @@ export default function ResetPasswordPage() {
             </p>
 
             <form onSubmit={onSubmit} className="mt-7 space-y-4">
-              <Input
+              <PasswordInput
                 label="New password"
-                type="password"
                 required
                 minLength={8}
                 autoComplete="new-password"
@@ -114,9 +113,8 @@ export default function ResetPasswordPage() {
                 leadingIcon={<Lock size={16} />}
                 disabled={busy}
               />
-              <Input
+              <PasswordInput
                 label="Confirm new password"
-                type="password"
                 required
                 minLength={8}
                 autoComplete="new-password"

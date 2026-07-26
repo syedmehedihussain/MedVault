@@ -220,6 +220,26 @@ export function AlertTriangleIcon(props: IconProps) {
   );
 }
 
+export function EyeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Icon>
+  );
+}
+
+export function EyeOffIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9.9 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 4" />
+      <path d="M6.4 7.6A16.9 16.9 0 0 0 2.5 12S6 18.5 12 18.5a9.4 9.4 0 0 0 3.9-.85" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+      <path d="m3.5 3.5 17 17" />
+    </Icon>
+  );
+}
+
 // Short-name aliases so screens can write `<Camera size={18} />` without the
 // verbose `*Icon` suffix everywhere. The full names remain exported above
 // for callers that prefer them.
@@ -243,6 +263,8 @@ export const Spinner = SpinnerIcon;
 export const Logout = LogoutIcon;
 export const Trash = TrashIcon;
 export const AlertTriangle = AlertTriangleIcon;
+export const Eye = EyeIcon;
+export const EyeOff = EyeOffIcon;
 
 // Public icon component type — used by reportType.ts to type its `icon` field.
 export type IconType = (props: IconProps) => React.JSX.Element;

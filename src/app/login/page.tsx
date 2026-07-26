@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 import Logo from "@/components/Logo";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import PasswordInput from "@/components/PasswordInput";
 import EncryptedNotice from "@/components/EncryptedNotice";
 import Disclaimer from "@/components/Disclaimer";
 import { Lock, Camera } from "@/components/icons";
@@ -217,9 +218,8 @@ function LoginForm() {
             />
             {mode !== "reset" && (
               <div>
-                <Input
+                <PasswordInput
                   label="Password"
-                  type="password"
                   required
                   minLength={8}
                   autoComplete={

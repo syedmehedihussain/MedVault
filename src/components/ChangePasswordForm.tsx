@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { Lock } from "@/components/icons";
-import Input from "@/components/Input";
+import PasswordInput from "@/components/PasswordInput";
 import Button from "@/components/Button";
 
 export default function ChangePasswordForm() {
@@ -107,9 +107,8 @@ export default function ChangePasswordForm() {
         Change password
       </div>
 
-      <Input
+      <PasswordInput
         label="Current password"
-        type="password"
         required
         autoComplete="current-password"
         value={currentPassword}
@@ -117,9 +116,8 @@ export default function ChangePasswordForm() {
         placeholder="Your current password"
         disabled={busy}
       />
-      <Input
+      <PasswordInput
         label="New password"
-        type="password"
         required
         minLength={8}
         autoComplete="new-password"
@@ -128,9 +126,8 @@ export default function ChangePasswordForm() {
         placeholder="At least 8 characters"
         disabled={busy}
       />
-      <Input
+      <PasswordInput
         label="Confirm new password"
-        type="password"
         required
         minLength={8}
         autoComplete="new-password"
