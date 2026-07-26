@@ -36,6 +36,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# puku local tool state. Its embedding DB stores raw chunks of every file it
+# indexes, including gitignored ones like .env.local, so this directory must
+# never be committed — a tracked index is what leaked real keys to the public
+# remote on 2026-07-26.
+.puku/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
