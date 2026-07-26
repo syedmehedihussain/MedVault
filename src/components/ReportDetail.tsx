@@ -8,6 +8,7 @@ import Pill from "./Pill";
 import StatusPill from "./StatusPill";
 import ScanPlaceholder from "./ScanPlaceholder";
 import Disclaimer from "./Disclaimer";
+import DeleteReportButton from "./DeleteReportButton";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -71,6 +72,7 @@ export default function ReportDetail({
   const meta = typeForReport(report);
   const Icon = meta.icon;
   const isFailed = report.extraction_status === "failed";
+  const title = report.report_type?.trim() || "Medical report";
 
   return (
     <article className="flex flex-col gap-8">
@@ -92,7 +94,7 @@ export default function ReportDetail({
             ) : null}
           </div>
           <h1 className="mt-3 text-2xl font-extrabold text-ink-900 sm:text-3xl">
-            {report.report_type?.trim() || "Medical report"}
+            {title}
           </h1>
           <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-500">
             {dateLabel && (
@@ -113,6 +115,8 @@ export default function ReportDetail({
             </div>
           </dl>
         </div>
+
+        <DeleteReportButton reportId={report.id} reportTitle={title} />
       </header>
 
       {/* Summary */}

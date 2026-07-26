@@ -54,6 +54,8 @@ Work top to bottom. Finish all **P0** before starting **P1**. Check items off as
 ## Milestone 8 — Stretch (P2)
 - [ ] F10: PDF upload support.
 - [ ] F11: delete / edit a record.
+  - [x] Delete: `DELETE /api/reports/[id]` + confirm dialog on the detail page.
+        Removes the row and its storage object. Edit is still open.
 - [ ] Add the `USE_MOCK_EXTRACTION` demo fallback (see `AI_INTEGRATION.md`).
 
 ## Done checklist (before submitting)
