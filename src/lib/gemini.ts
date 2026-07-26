@@ -61,7 +61,12 @@ export async function extractReport(
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      // Use the rolling free-tier aliases rather than pinned versions —
+      // Google retires `gemini-2.5-flash*` for new accounts and rejects
+      // pinned names with 404. `*-latest` aliases stay on the free tier
+      // and accept the same multimodal input. If you switch to a paid
+      // key, pin a specific version here for reproducibility.
+      model: "gemini-flash-lite-latest",
       contents: [
         { inlineData: { mimeType, data: base64Image } },
         { text: EXTRACTION_PROMPT },

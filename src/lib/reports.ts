@@ -46,8 +46,13 @@ export async function getDashboardReports(
       let signedUrl: string | null = null;
       if (r.file_path) {
         try {
+          // Lazy-import keeps storage.ts from running in client bundles.
           const { createSignedUrl } = await import("./storage");
-          signedUrl = await createSignedUrl(r.file_path);
+          const url = await createSignedUrl(r.file_path);
+          // Storage helper returns null on a missing object, but coerce the
+          // empty-string fallback too so the dashboard never renders a
+          // broken `src=""`.
+          signedUrl = url && url.length > 0 ? url : null;
         } catch {
           signedUrl = null;
         }

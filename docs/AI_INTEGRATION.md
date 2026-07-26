@@ -43,7 +43,7 @@ export async function extractReport(
 ): Promise<{ data: ExtractedReport | null; status: "done" | "failed" }> {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: [
         { inlineData: { mimeType, data: base64Image } },
         { text: EXTRACTION_PROMPT },
