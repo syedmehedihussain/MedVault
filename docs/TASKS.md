@@ -40,8 +40,10 @@ Work top to bottom. Finish all **P0** before starting **P1**. Check items off as
 - [x] Show filtered results live.
 
 ## Milestone 6 — Deploy (P0)
-- [ ] Write root `README.md`: setup, env vars, run locally, deploy steps.
+- [x] Write root `README.md`: setup, env vars, run locally, deploy steps.
 - [ ] Push to GitHub (ensure `.env` is ignored, `.env.example` is committed).
+  - [x] `.env.example` restored and un-ignored (`!.env.example`); it had been
+        swallowed by the `.env*` rule and was never actually committed.
 - [ ] Deploy to Vercel; add all env vars in Vercel settings.
 - [ ] Test the live URL end-to-end (sign up → upload → extract → search).
 
