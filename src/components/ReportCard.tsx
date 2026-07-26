@@ -19,68 +19,92 @@ function formatDate(iso: string | null): string {
   });
 }
 
+// First sentence/clause of `text`, hard-capped at `max` characters.
+function firstClause(text: string | null | undefined, max: number): string {
+  if (!text) return "";
+  const clause = text.match(/^[^.!?\n]+/)?.[0] ?? text;
+  return clause.length > max ? `${clause.slice(0, max).trimEnd()}…` : clause;
+}
+
 export default function ReportCard({ report }: { report: ReportRow }) {
   const date = formatDate(report.report_date) || formatDate(report.created_at);
+  // Compose subtitle from doctor/hospital, partner-source tag, and date — but
+  // only show parts that carry real info. Skipping the "Personal record"
+  // fallback keeps cards from feeling padded with empty text.
+  // Extraction sometimes dumps a whole referral paragraph into
+  // doctor_or_hospital — keep the first clause so the meta line reads as a
+  // name, not a wall of text that only CSS truncation is holding back.
+  const docOrHospital = firstClause(report.doctor_or_hospital?.trim(), 48);
+  const sourceTag =
+    report.source === "partner_hospital" ? "Partner hospital" : "";
+  const subtitleParts = [docOrHospital || sourceTag || null, date || null]
+    .filter(Boolean)
+    .join(" · ");
   const title = report.report_type?.trim() || "Untitled report";
-  const subtitle =
-    report.doctor_or_hospital?.trim() ||
-    (report.source === "partner_hospital"
-      ? "Partner hospital"
-      : "Personal record");
-  const summary =
+  // Truncate to a single readable sentence so cards stay tight. Long
+  // clinical paragraphs from the model get trimmed to the first period
+  // (or ~120 chars) before display.
+  const rawSummary =
     report.summary?.trim() ||
     (report.extraction_status === "failed"
       ? "Saved — we couldn't read this report automatically."
       : "No summary available.");
+  const sentenceMatch = rawSummary.match(/^[^.!?\n]+[.!?]/);
+  const summary = (sentenceMatch ? sentenceMatch[0] : rawSummary).slice(0, 140);
   const typeMeta = typeForReport(report);
   const Icon = typeMeta.icon;
 
   return (
-    <article className="group flex items-stretch gap-4 rounded-3xl border border-line bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
+    // Every text node is truncated and every flex ancestor carries min-w-0,
+    // so the card is sized by its column and never by its content — long
+    // extracted titles/summaries can't push the page into a sideways scroll.
+    <article className="group flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-line bg-white px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]">
       {/* Tinted icon tile */}
       <span
-        className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
         style={{
           background: typeMeta.tile,
           color: typeMeta.tileText,
         }}
         aria-hidden
       >
-        <Icon size={26} />
+        <Icon size={18} />
       </span>
 
       {/* Body */}
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="truncate text-base font-extrabold text-ink-900">
-              {title}
-            </h3>
-            <p className="mt-0.5 truncate text-xs text-ink-500">
-              {subtitle}
-              {date ? ` · ${date}` : ""}
-            </p>
-          </div>
-          <span className="shrink-0 text-ink-400 transition-colors group-hover:text-brand-600">
-            <ChevronRight size={18} />
-          </span>
-        </div>
-
-        <p className="line-clamp-2 text-sm text-ink-700">{summary}</p>
-
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <Pill tone={typeMeta.tone}>{typeMeta.label}</Pill>
-          {report.extraction_status === "failed" ? (
-            <Pill tone="other">Read pending</Pill>
-          ) : null}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
+            {title}
+          </h3>
           {report.results.length > 0 ? (
-            <span className="text-[11px] text-ink-400">
+            <span className="shrink-0 text-[11px] text-ink-400">
               {report.results.length} test
               {report.results.length === 1 ? "" : "s"}
             </span>
           ) : null}
         </div>
+
+        <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-ink-500">
+          <Pill tone={typeMeta.tone} className="shrink-0 px-1.5 py-0.5 text-[10px]">
+            {typeMeta.label}
+          </Pill>
+          {report.extraction_status === "failed" ? (
+            <Pill tone="other" className="shrink-0 px-1.5 py-0.5 text-[10px]">
+              Read pending
+            </Pill>
+          ) : null}
+          {subtitleParts ? (
+            <span className="min-w-0 flex-1 truncate">{subtitleParts}</span>
+          ) : null}
+        </div>
+
+        <p className="truncate text-xs text-ink-700">{summary}</p>
       </div>
+
+      <span className="shrink-0 text-ink-400 transition-colors group-hover:text-brand-600">
+        <ChevronRight size={16} />
+      </span>
     </article>
   );
 }

@@ -1,6 +1,10 @@
 // Map a report row to its visual treatment — tinted tile color, icon
 // component, chip label, and tone. Centralized so dashboard cards, the
 // report detail header, and the search chips stay in sync.
+//
+// `label` is a short category ("Blood test", "Scan"), never the raw
+// report_type: the title already shows that, and extracted report_type
+// values can be long enough to blow out a card's width.
 
 import {
   Droplet,
@@ -49,7 +53,7 @@ export function typeForReport(report: {
 
   if (/(cbc|blood|hemo|glucose|sugar|cholesterol|triglyceride|lipid|a1c|hemoglobin)/i.test(t)) {
     return {
-      label: report.report_type!,
+      label: "Blood test",
       icon: Droplet,
       tile: "#FBE7E3",
       tileText: "#B0473B",
@@ -59,7 +63,7 @@ export function typeForReport(report: {
 
   if (/(prescript|rx|medic|drug|pharma)/i.test(t)) {
     return {
-      label: report.report_type!,
+      label: "Prescription",
       icon: DocumentLines,
       tile: "#FCE9DA",
       tileText: "#B25C1F",
@@ -69,7 +73,7 @@ export function typeForReport(report: {
 
   if (/(x-?ray|ct|mri|scan|imaging|ultra)/i.test(t)) {
     return {
-      label: report.report_type!,
+      label: "Scan",
       icon: Camera,
       tile: "#E0EAF7",
       tileText: "#2F5393",
@@ -79,7 +83,7 @@ export function typeForReport(report: {
 
   if (/(trend|chart|panel|profile)/i.test(t)) {
     return {
-      label: report.report_type!,
+      label: "Panel",
       icon: ChartLine,
       tile: "#E3F3F0",
       tileText: "#0E9C90",
@@ -88,7 +92,7 @@ export function typeForReport(report: {
   }
 
   return {
-    label: report.report_type!,
+    label: "Report",
     icon: DocumentLines,
     tile: "#F4EFE6",
     tileText: "#8B7B5E",

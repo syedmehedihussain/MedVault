@@ -54,10 +54,13 @@ export default function RecordsList({
   }
 
   return (
-    <ul className="grid gap-4">
+    // `min-w-0` on each row is load-bearing: grid children default to
+    // `min-width: auto`, so a long title or summary would otherwise widen the
+    // column past the page and give the whole dashboard a horizontal scroll.
+    <ul className="grid w-full gap-2.5">
       {filtered.map((r) => (
-        <li key={r.id}>
-          <Link href={`/reports/${r.id}`} className="block">
+        <li key={r.id} className="min-w-0">
+          <Link href={`/reports/${r.id}`} className="block min-w-0">
             <ReportCard report={r} />
           </Link>
         </li>
